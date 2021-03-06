@@ -1,0 +1,35 @@
+db.productos.aggregate( [
+  { $match: {"articulo": ObjectId("5f0b03c07f7a0326619c15e6") }}
+  ,{
+     $graphLookup: {
+        from: "productos",
+        startWith: "$parent",
+        connectFromField: "parent",
+        connectToField: "_id",
+        depthField: "level",
+        as: "reportingHierarchy"
+     }
+  }
+] ).pretty()
+
+db.articulos.aggregate([
+   { $match: {"_id": ObjectId("5f0b03c07f7a0326619c15e6") } }
+   ,{ $graphLookup:
+      {
+         from: "productos"
+         ,startWith: "articulo"
+         ,connectFromField: "parent"
+         ,connectToField: "_id"
+         ,depthField: "nivel"
+         ,as: "result"
+      }
+   }
+   ,{
+      $project:
+      {
+         "name": 1
+         ,"image": 1
+         ,"productos": "$result"
+      }
+   }
+]).pretty()
